@@ -39,12 +39,27 @@ class Interference:
         return [ self.state[x] for x in range( yid, self.nxs*self.nys, self.nys ) ]
 
 
+    def get_color( self, val, id , compact ):
+        compact_color = 0
+        id_a          = ord('a')
+        for c in compact:
+            if c['idx'] == val[id]:
+                if "" == c['color']:
+                    compact_color = 1
+                else:
+                    ch = c['color'][0].lower()
+                    compact_color = 2 + ord(ch) - id_a
+                break
+        return compact_color
+
+
     def is_xselectable( self, xid, compact ):
         for val in self.get_x( xid ):
             if( None != val["x_color"] ):
                 return False
             #
-            compact_color = 1 if val["yid"] in compact else 0
+            # compact_color = 1 if val["yid"] in compact else 0
+            compact_color = self.get_color( val, "yid", compact )
             if None != val["y_color"] and compact_color != val["y_color"]:
                 return False
         return True
@@ -52,7 +67,8 @@ class Interference:
 
     def xselect( self, xid, compact ):
         for val in self.get_x( xid ):
-            compact_color = 1 if val["yid"] in compact else 0
+            # compact_color = 1 if val["yid"] in compact else 0
+            compact_color = self.get_color( val, "yid", compact )
             self.state[ val["id"] ] = {
                 "x_color": compact_color,
                 "y_color": val["y_color"],
@@ -78,7 +94,8 @@ class Interference:
             if( None != val["y_color"] ):
                 return False
             #
-            compact_color = 1 if val["xid"] in compact else 0
+            # compact_color = 1 if val["xid"] in compact else 0
+            compact_color = self.get_color( val, "xid", compact )
             if None != val["x_color"] and compact_color != val["x_color"]:
                 return False
         return True
@@ -86,7 +103,8 @@ class Interference:
 
     def yselect( self, yid, compact ):
         for val in self.get_y( yid ):
-            compact_color = 1 if val["xid"] in compact else 0
+            # compact_color = 1 if val["xid"] in compact else 0
+            compact_color = self.get_color( val, "xid", compact )
             self.state[ val["id"] ] = {
                 "x_color": val["x_color"],
                 "y_color": compact_color,
@@ -109,10 +127,10 @@ class Interference:
 
 if __name__ == '__main__':
     a = Interference( 5, 5 )
-    c = [ 1, 2 ]
+    c = [ {"idx":1, "color":"a"}, {"idx":2, "color":"a"} ]
     print( a.is_xselectable(1,c) )
     a.xselect( 1, c )
-    r = [0,1]
+    r = [{"idx":0, "color":"a"}, {"idx":1, "color":"a"}]
     print( a.is_yselectable(0,r) )
     print( a.is_yselectable(1,r) )
     a.yselect(1,r)
